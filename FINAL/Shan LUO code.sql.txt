@@ -1,0 +1,153 @@
+-- what the survey table looks like and what columns does this table have 
+SELECT *
+FROM survey
+LIMIT 10;
+
+-- count the distinct user # in survey table
+SELECT COUNT (DISTINCT user_id) AS 'count'
+FROM survey;
+
+-- count the distinct user # for each question in survey table
+SELECT question, 
+ COUNT (DISTINCT user_id) AS 'count'
+FROM survey
+GROUP BY 1
+ORDER BY 1;
+
+SELECT *
+FROM quiz
+LIMIT 5;
+
+SELECT *
+FROM home_try_on
+LIMIT 5;
+
+SELECT *
+FROM purchase
+LIMIT 5;
+
+-- create a temp table called funnel to left join the data from quiz,         
+-- home_try_on and purchase table
+WITH funnel AS (
+	SELECT q.user_id,
+	-- if user moved forward from taking quizs to home try on, result 1,           
+  	-- otherwise, result 0
+  	h.user_id IS NOT NULL AS 'is_home_try_on',
+    	h.number_of_pairs,
+    	-- if user finally made the purchase, result 1, otherwise, result 0
+  	p.user_id IS NOT NULL AS 'is_purchase'
+	FROM quiz AS 'q'
+	LEFT JOIN home_try_on AS 'h'
+		ON h.user_id = q.user_id
+	LEFT JOIN purchase AS 'p'
+		ON p.user_id = h.user_id)
+-- Calculate overall conversion rate and coversion rate from quiz to home
+-- try on and home try on to purchase
+SELECT COUNT (DISTINCT user_id) AS 'num_customers',
+		SUM (is_home_try_on) AS 'num_home_try_on',
+    SUM (is_purchase) AS 'num_purchase',
+    1.0 * SUM (is_purchase) / COUNT (*) AS 'overall_conversion_rate',
+    1.0 * SUM (is_home_try_on) / COUNT (*) AS 'quiz_to_try_on_rate',
+    1.0 * SUM (is_purchase) / SUM (is_home_try_on) AS 'try_on_to_purchase_rate'
+FROM funnel;
+
+-- create a temp table called funnel to left join the data from quiz,         
+-- home_try_on and purchase table
+WITH funnel AS (
+	SELECT q.user_id,
+	-- if user moved forward from taking quizs to home try on, result 1,          
+  	-- otherwise, result 0
+  	h.user_id IS NOT NULL AS 'is_home_try_on',
+    	h.number_of_pairs,
+    	-- if user finally made the purchase, result 1, otherwise, result 0
+  	p.user_id IS NOT NULL AS 'is_purchase'
+	FROM quiz AS 'q'
+	LEFT JOIN home_try_on AS 'h'
+		ON h.user_id = q.user_id
+	LEFT JOIN purchase AS 'p'
+		ON p.user_id = h.user_id)
+-- count customer purchase rate based on number_of_pairs
+SELECT number_of_pairs,
+		COUNT (DISTINCT user_id) AS 'num_customers',
+		SUM (is_home_try_on) AS 'num_home_try_on',
+    SUM (is_purchase) AS 'num_purchase',
+    1.0 * SUM (is_purchase) / SUM (is_home_try_on) AS 'try_on_to_purchase_rate'
+FROM funnel
+WHERE number_of_pairs IS NOT NULL
+GROUP BY 1;
+
+        
+-- create a temp table called funnel to left join the data from quiz,         
+-- home_try_on and purchase table
+WITH funnel AS (
+	SELECT q.user_id,
+	-- if user moved forward from taking quizs to home try on, result 1,      
+  	-- otherwise, result 0
+  	h.user_id IS NOT NULL AS 'is_home_try_on',
+    	-- if user finally made the purchase, result 1, otherwise, result 0
+  	p.user_id IS NOT NULL AS 'is_purchase',
+  	p.style,
+  	p.color, 
+   	P.price
+	FROM quiz AS 'q'
+	LEFT JOIN home_try_on AS 'h'
+		ON h.user_id = q.user_id
+	LEFT JOIN purchase AS 'p'
+		ON p.user_id = h.user_id)
+-- which style customers purchase most
+SELECT style,
+    SUM (is_purchase) AS 'num_purchase'
+FROM funnel
+WHERE style IS NOT NULL
+GROUP BY 1
+ORDER BY 2 DESC;
+	
+-- create a temp table called funnel to left join the data from quiz,         
+-- home_try_on and purchase table
+WITH funnel AS (
+	SELECT q.user_id,
+	-- if user moved forward from taking quizs to home try on, result 1,      
+  	-- otherwise, result 0
+  	h.user_id IS NOT NULL AS 'is_home_try_on',
+        -- if user finally made the purchase, result 1, otherwise, result 0
+  	p.user_id IS NOT NULL AS 'is_purchase',
+  	p.style,
+  	p.color, 
+   	P.price
+	FROM quiz AS 'q'
+	LEFT JOIN home_try_on AS 'h'
+		ON h.user_id = q.user_id
+	LEFT JOIN purchase AS 'p'
+		ON p.user_id = h.user_id)
+-- which color customers purchase most
+SELECT color,
+    SUM (is_purchase) AS 'num_purchase'
+FROM funnel
+WHERE style IS NOT NULL
+GROUP BY 1
+ORDER BY 2 DESC;
+
+-- create a temp table called funnel to left join the data from quiz,         
+-- home_try_on and purchase table
+WITH funnel AS (
+	SELECT q.user_id,
+	-- if user moved forward from taking quizs to home try on, result 1,      
+  	-- otherwise, result 0
+  	h.user_id IS NOT NULL AS 'is_home_try_on',
+    	-- if user finally made the purchase, result 1, otherwise, result 0
+  	p.user_id IS NOT NULL AS 'is_purchase',
+  	p.style,
+  	p.color, 
+   	P.price
+	FROM quiz AS 'q'
+	LEFT JOIN home_try_on AS 'h'
+		ON h.user_id = q.user_id
+	LEFT JOIN purchase AS 'p'
+		ON p.user_id = h.user_id)
+-- which color customers purchase most
+SELECT price,
+    SUM (is_purchase) AS 'num_purchase'
+FROM funnel
+WHERE style IS NOT NULL
+GROUP BY 1
+ORDER BY 2 DESC;
